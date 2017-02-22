@@ -475,6 +475,7 @@ func (c *Command) startupJoin(config *Config, agent *Agent) error {
 
 // retryJoin is invoked to handle joins with retries. This runs until at least a
 // single successful join or RetryMaxAttempts is reached
+// Modifying config is not reflected here.  Why?
 func (c *Command) retryJoin(config *Config, agent *Agent, errCh chan struct{}) {
 	// Quit fast if there is no nodes to join
 	if len(config.RetryJoin) == 0 {
@@ -502,6 +503,7 @@ func (c *Command) retryJoin(config *Config, agent *Agent, errCh chan struct{}) {
 
 		// Log the failure and sleep
 		c.logger.Printf("[WARN] agent: Join failed: %v, retrying in %v", err, config.RetryInterval)
+		c.logger.Printf("config: %+v, address of config: %s", config, &config)
 		time.Sleep(config.RetryInterval)
 	}
 }
@@ -664,8 +666,12 @@ WAIT:
 
 // handleReload is invoked when we should reload our configs, e.g. SIGHUP
 func (c *Command) handleReload(config *Config, agent *Agent) *Config {
-	c.Ui.Output("Reloading configuration...")
-	newConf := c.readConfig()
+	c.Ui.Output("Reloading configuration shitbird...")
+	testNewConf := *c.readConfig()
+	*config = testNewConf
+	newConf := &testNewConf
+
+	c.Ui.Output(fmt.Sprintf("config: %+v, address of config: %s", newConf, &newConf))
 	if newConf == nil {
 		c.Ui.Error(fmt.Sprintf("Failed to reload configs"))
 		return config

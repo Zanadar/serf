@@ -1,0 +1,5 @@
+{
+	"retry_join": ["127.0.0.5"],
+	"retry_interval": "1s",
+	"log_level": "TRACE"
+}
